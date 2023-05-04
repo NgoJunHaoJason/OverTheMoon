@@ -37,7 +37,7 @@ def _bollinger_bands(
     return upper_band, lower_band
 
 
-def price_wma_ratio(stock_price: pd.Series) -> float:
+def price_weighted_moving_average_ratio(stock_price: pd.Series) -> float:
     return (stock_price / _weighted_moving_average(stock_price)).values[-1]
 
 

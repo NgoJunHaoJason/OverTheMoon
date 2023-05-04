@@ -38,12 +38,12 @@ async def webhook(request: Request):
     symbol = request_body["message"]["text"]
 
     try:
-        signal, close, fso, pb, pwma = get_signal(symbol)
+        fso_signal, pb_signal, pwma_signal, main_signal, last_close = get_signal(symbol)
         text = (
-            f"{symbol} is {signal} at {close:.2f}\n"
-            f"fast stochastic oscillator: {fso:.2f}\n"
-            f"%B: {pb:.2f}\n"
-            f"price / weighted moving average: {pwma:.2f}\n"
+            f"{symbol} is {main_signal} at ${last_close:.2f}\n\n"
+            f"fast stochastic oscillator:\n{fso_signal}\n\n"
+            f"%B:\n{pb_signal}\n\n"
+            f"price / weighted moving average:\n{pwma_signal}\n\n"
         )
     except Exception as error:
         text = f"Failed to get signal for '{symbol}'"
@@ -52,7 +52,7 @@ async def webhook(request: Request):
     bot_message = {"chat_id": chat_id, "text": text}
     logging.info(f"bot message:\n{bot_message}")
 
-    response = await client.post(SEND_MESSAGE_URL, json=bot_message)
-    logging.info(f"response:\n{response}")
+    result = await client.post(SEND_MESSAGE_URL, json=bot_message)
+    logging.info(f"telegram post:\n{result}")
 
     return bot_message
