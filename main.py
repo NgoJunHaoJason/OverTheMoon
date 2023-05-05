@@ -5,7 +5,7 @@ import httpx
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 
-from src.stonks import get_signal
+from stonks.signals import get_signal
 
 load_dotenv()
 
