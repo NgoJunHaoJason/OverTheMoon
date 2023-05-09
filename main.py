@@ -38,9 +38,17 @@ async def webhook(request: Request):
     symbol = request_body["message"]["text"]
 
     try:
-        fso_signal, pb_signal, pwma_signal, main_signal, last_close = get_signal(symbol)
+        (
+            fso_signal,
+            pb_signal,
+            pwma_signal,
+            main_signal,
+            last_close,
+            date,
+        ) = get_signal(symbol)
+
         text = (
-            f"{symbol} is {main_signal} at ${last_close:.2f}\n\n"
+            f"{symbol} is {main_signal} at ${last_close:.2f} as of {date}\n\n"
             f"fast stochastic oscillator:\n{fso_signal}\n\n"
             f"%B:\n{pb_signal}\n\n"
             f"price / weighted moving average:\n{pwma_signal}\n\n"

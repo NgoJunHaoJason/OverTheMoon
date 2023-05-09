@@ -1,5 +1,7 @@
+import datetime as dt
 from enum import Enum
 
+import pandas as pd
 import yfinance as yf
 
 from .indicators import (
@@ -9,7 +11,7 @@ from .indicators import (
 )
 
 
-def get_signal(symbol: str) -> tuple[str, str, str, str, float]:
+def get_signal(symbol: str) -> tuple[str, str, str, str, float, dt.date]:
     stock = yf.Ticker(symbol)
     history = stock.history(period="2mo")
 
@@ -29,7 +31,10 @@ def get_signal(symbol: str) -> tuple[str, str, str, str, float]:
     main_signal = _get_main_signal(fso_value, pb_value, pwma_value)
     last_close = close.values[-1]
 
-    return fso_signal, pb_signal, pwma_signal, main_signal, last_close
+    dates = pd.DatetimeIndex(history.index)
+    date: dt.date = dates.date[-1]
+
+    return fso_signal, pb_signal, pwma_signal, main_signal, last_close, date
 
 
 def _get_fso_signal(fso_value: float) -> str:
