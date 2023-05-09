@@ -40,18 +40,18 @@ def get_signal(symbol: str) -> tuple[str, str, str, str, float, dt.date]:
 def _get_fso_signal(fso_value: float) -> str:
     if fso_value > _FastStochasticOscillator.OVERBOUGHT_THRESHOLD.value:
         signal = (
-            f"{fso_value:.3f}"
-            f" > {_FastStochasticOscillator.OVERBOUGHT_THRESHOLD.value}"
+            f"{_FastStochasticOscillator.OVERBOUGHT_THRESHOLD.value}"
+            f" < [{fso_value:.3f}]"
         )
     elif fso_value < _FastStochasticOscillator.OVERSOLD_THRESHOLD.value:
         signal = (
-            f"{fso_value:.3f}"
+            f"[{fso_value:.3f}]"
             f" < {_FastStochasticOscillator.OVERSOLD_THRESHOLD.value}"
         )
     else:
         signal = (
             f"{_FastStochasticOscillator.OVERSOLD_THRESHOLD.value}"
-            f" <= {fso_value:.3f}"
+            f" <= [{fso_value:.3f}]"
             f" <= {_FastStochasticOscillator.OVERBOUGHT_THRESHOLD.value}"
         )
 
@@ -60,13 +60,13 @@ def _get_fso_signal(fso_value: float) -> str:
 
 def _get_pb_signal(pb_value: float) -> str:
     if pb_value > _PercentB.OVERBOUGHT_THRESHOLD.value:
-        signal = f"{pb_value:.3f} > {_PercentB.OVERBOUGHT_THRESHOLD.value}"
+        signal = f"{_PercentB.OVERBOUGHT_THRESHOLD.value} < [{pb_value:.3f}]"
     elif pb_value < _PercentB.OVERSOLD_THRESHOLD.value:
-        signal = f"{pb_value:.3f} < {_PercentB.OVERSOLD_THRESHOLD.value}"
+        signal = f"[{pb_value:.3f}] < {_PercentB.OVERSOLD_THRESHOLD.value}"
     else:
         signal = (
             f"{_PercentB.OVERSOLD_THRESHOLD.value}"
-            f" <= {pb_value:.3f}"
+            f" <= [{pb_value:.3f}]"
             f" <= {_PercentB.OVERBOUGHT_THRESHOLD.value}"
         )
 
@@ -76,18 +76,18 @@ def _get_pb_signal(pb_value: float) -> str:
 def _get_pwma_signal(pwma_value: float) -> str:
     if pwma_value > _PriceWeightedMovingAverageRatio.OVERBOUGHT_THRESHOLD.value:
         signal = (
-            f"{pwma_value:.3f}"
-            f" > {_PriceWeightedMovingAverageRatio.OVERBOUGHT_THRESHOLD.value}"
+            f"{_PriceWeightedMovingAverageRatio.OVERBOUGHT_THRESHOLD.value}"
+            f" < [{pwma_value:.3f}]"
         )
     elif pwma_value < _PriceWeightedMovingAverageRatio.OVERSOLD_THRESHOLD.value:
         signal = (
-            f"{pwma_value:.3f}"
+            f"[{pwma_value:.3f}]"
             f" < {_PriceWeightedMovingAverageRatio.OVERSOLD_THRESHOLD.value}"
         )
     else:
         signal = (
             f"{_PriceWeightedMovingAverageRatio.OVERSOLD_THRESHOLD.value}"
-            f" <= {pwma_value:.3f}"
+            f" <= [{pwma_value:.3f}]"
             f" <= {_PriceWeightedMovingAverageRatio.OVERBOUGHT_THRESHOLD.value}"
         )
 
