@@ -23,7 +23,7 @@ app = FastAPI()
 client = httpx.AsyncClient()
 
 
-@app.get("/")
+@app.get("/hello")
 async def hello():
     logging.info("Hello")
     return "Hello"
@@ -32,10 +32,10 @@ async def hello():
 @app.post("/")
 async def webhook(request: Request):
     request_body = await request.json()
-    logging.info(f"request:\n{request_body}")
+    logging.info(f"request: {request_body}")
 
-    chat_id = request_body["message"]["chat"]["id"]
-    symbol = request_body["message"]["text"]
+    chat_id: int = request_body["message"]["chat"]["id"]
+    symbol: str = request_body["message"]["text"]
 
     try:
         (
@@ -48,7 +48,7 @@ async def webhook(request: Request):
         ) = get_signal(symbol)
 
         text = (
-            f"{symbol} is {main_signal} at ${last_close:.2f}"
+            f"{symbol.upper()} is {main_signal} at ${last_close:.2f}"
             f" as of {date.strftime('%d %b %Y')}\n\n"
             f"fast stochastic oscillator:\n{fso_signal}\n\n"
             f"%B:\n{pb_signal}\n\n"
@@ -59,9 +59,9 @@ async def webhook(request: Request):
         logging.error(f"{text} due to {error}")
 
     bot_message = {"chat_id": chat_id, "text": text}
-    logging.info(f"bot message:\n{bot_message}")
+    logging.info(f"bot message: {bot_message}")
 
     result = await client.post(SEND_MESSAGE_URL, json=bot_message)
-    logging.info(f"telegram post:\n{result}")
+    logging.info(f"telegram post status: {result.status_code}")
 
     return bot_message
