@@ -5,7 +5,7 @@ import httpx
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 
-from stonks.signals import get_signal
+from stonks.bot import check_stock_signal, follow_command
 
 load_dotenv()
 
@@ -35,30 +35,15 @@ async def webhook(request: Request):
     logging.info(f"request: {request_body}")
 
     chat_id: int = request_body["message"]["chat"]["id"]
-    symbol: str = request_body["message"]["text"]
+    incoming_text: str = request_body["message"]["text"]
 
-    try:
-        (
-            fso_signal,
-            pb_signal,
-            pwma_signal,
-            main_signal,
-            last_close,
-            date,
-        ) = get_signal(symbol)
+    if incoming_text.startswith("/"):
+        command, *params = incoming_text.split()
+        outgoing_text = follow_command(chat_id, command, params)
+    else:
+        outgoing_text = check_stock_signal(symbol=incoming_text)
 
-        text = (
-            f"{symbol.upper()} is {main_signal} at ${last_close:.2f}"
-            f" as of {date.strftime('%d %b %Y')}\n\n"
-            f"fast stochastic oscillator:\n{fso_signal}\n\n"
-            f"%B:\n{pb_signal}\n\n"
-            f"price / weighted moving average:\n{pwma_signal}\n\n"
-        )
-    except Exception as error:
-        text = f"Failed to get signal for '{symbol}'"
-        logging.error(f"{text} due to {error}")
-
-    bot_message = {"chat_id": chat_id, "text": text}
+    bot_message = {"chat_id": chat_id, "text": outgoing_text}
     logging.info(f"bot message: {bot_message}")
 
     result = await client.post(SEND_MESSAGE_URL, json=bot_message)

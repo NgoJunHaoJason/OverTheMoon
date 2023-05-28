@@ -49,5 +49,4 @@ under Settings tab:
 ## TODO
 
 1. user-stock db (Deta Base integration)
-2. /list, /watch {stock}, /unwatch {stock}
-3. cron job (cron-job.org integration)
+2. cron job (cron-job.org integration)
