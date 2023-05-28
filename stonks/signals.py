@@ -1,5 +1,6 @@
 import datetime as dt
 from enum import Enum
+from typing import Any
 
 import pandas as pd
 import yfinance as yf
@@ -12,7 +13,25 @@ from stonks.indicators import (
 )
 
 
-def get_signal(symbol: str) -> tuple[str, str, str, str, float, dt.date]:
+def show_signals(
+    symbol: str,
+    main_signal: str,
+    fso_signal: str,
+    pb_signal: str,
+    pwma_signal: str,
+    last_close: float,
+    date: dt.date,
+) -> str:
+    return (
+        f"{symbol.upper()} is {main_signal} at ${last_close:.2f}"
+        f" as of {date.strftime('%d %b %Y')}\n\n"
+        f"fast stochastic oscillator:\n{fso_signal}\n\n"
+        f"%B:\n{pb_signal}\n\n"
+        f"price / weighted moving average:\n{pwma_signal}\n\n"
+    )
+
+
+def get_signals(symbol: str) -> dict[str, Any]:
     stock = yf.Ticker(symbol)
     history = stock.history(period="2mo")
 
@@ -33,12 +52,19 @@ def get_signal(symbol: str) -> tuple[str, str, str, str, float, dt.date]:
     pwma_signal = _get_pwma_signal(pwma_value)
 
     main_signal = _get_main_signal(fso_value, pb_value, pwma_value)
-    last_close = close.values[-1]
+    last_close = float(close.values[-1])
 
     dates = pd.DatetimeIndex(history.index)
     date: dt.date = dates.date[-1]
 
-    return fso_signal, pb_signal, pwma_signal, main_signal, last_close, date
+    return {
+        "main_signal": main_signal,
+        "fso_signal": fso_signal,
+        "pb_signal": pb_signal,
+        "pwma_signal": pwma_signal,
+        "last_close": last_close,
+        "date": date,
+    }
 
 
 def _get_fso_signal(fso_value: float) -> str:

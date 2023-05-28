@@ -2,28 +2,15 @@ import logging
 
 from deta import _Base
 
-from stonks.signals import get_signal
+from stonks.signals import get_signals, show_signals
 from stonks.watchlist import show_watchlist, unwatch_stocks, watch_stocks
 
 
 def check_stock_signal(symbol: str) -> str:
     try:
-        (
-            fso_signal,
-            pb_signal,
-            pwma_signal,
-            main_signal,
-            last_close,
-            date,
-        ) = get_signal(symbol)
+        signals = get_signals(symbol)
+        outgoing_text = show_signals(symbol, **signals)
 
-        outgoing_text = (
-            f"{symbol.upper()} is {main_signal} at ${last_close:.2f}"
-            f" as of {date.strftime('%d %b %Y')}\n\n"
-            f"fast stochastic oscillator:\n{fso_signal}\n\n"
-            f"%B:\n{pb_signal}\n\n"
-            f"price / weighted moving average:\n{pwma_signal}\n\n"
-        )
     except Exception as error:
         outgoing_text = f"Failed to retrieve data for '{symbol}'"
         logging.error(f"{outgoing_text} due to {error}")
