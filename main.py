@@ -2,6 +2,7 @@ import logging
 import os
 
 import httpx
+from deta import Deta
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 
@@ -9,9 +10,10 @@ from stonks.bot import check_stock_signal, follow_command
 
 load_dotenv()
 
+DETA_PROJECT_KEY = os.getenv("DETA_PROJECT_KEY")
 
-TOKEN = os.getenv("TELEGRAM_API_TOKEN")
-TELEGRAM_BOT_BASE_URL = f"https://api.telegram.org/bot{TOKEN}"
+TELEGRAM_API_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
+TELEGRAM_BOT_BASE_URL = f"https://api.telegram.org/bot{TELEGRAM_API_TOKEN}"
 SEND_MESSAGE_URL = f"{TELEGRAM_BOT_BASE_URL}/sendMessage"
 
 logging.basicConfig(
@@ -21,6 +23,9 @@ logging.basicConfig(
 
 app = FastAPI()
 client = httpx.AsyncClient()
+
+deta = Deta(DETA_PROJECT_KEY)
+deta_base = deta.Base("stonks")
 
 
 @app.get("/hello")
@@ -39,7 +44,7 @@ async def webhook(request: Request):
 
     if incoming_text.startswith("/"):
         command, *params = incoming_text.split()
-        outgoing_text = follow_command(chat_id, command, params)
+        outgoing_text = follow_command(deta_base, str(chat_id), command, params)
     else:
         outgoing_text = check_stock_signal(symbol=incoming_text)
 

@@ -37,16 +37,21 @@ uvicorn main:app --reload
 
 ## Render.com integration
 
-under Environment tab:
+under Environment:
 
 - set Python version in environment variables
 - set .env in secret files
 
-under Settings tab:
+under Settings:
 
 - set `uvicorn main:app --host 0.0.0.0 --port 10000` as start command
 
+## Deta Base integration
+
+under Collections settings:
+
+- create new data keys
+
 ## TODO
 
-1. user-stock db (Deta Base integration)
-2. cron job (cron-job.org integration)
+watchlist notification (cron-job.org integration)

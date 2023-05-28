@@ -1,6 +1,9 @@
 import logging
 
+from deta import _Base
+
 from stonks.signals import get_signal
+from stonks.watchlist import show_watchlist, unwatch_stocks, watch_stocks
 
 
 def check_stock_signal(symbol: str) -> str:
@@ -28,37 +31,22 @@ def check_stock_signal(symbol: str) -> str:
     return outgoing_text
 
 
-def follow_command(chat_id: int, command: str, params: list[str]) -> str:
+def follow_command(
+    deta_base: _Base,
+    chat_id: str,
+    command: str,
+    params: list[str],
+) -> str:
     if command == "/list":
-        outgoing_text = _show_watchlist(chat_id)
+        outgoing_text = show_watchlist(deta_base, chat_id)
 
     elif command == "/watch":
-        outgoing_text = _watch_stocks(chat_id, symbols=params)
+        outgoing_text = watch_stocks(deta_base, chat_id, symbols=params)
 
     elif command == "/unwatch":
-        outgoing_text = _unwatch_stocks(chat_id, symbols=params)
+        outgoing_text = unwatch_stocks(deta_base, chat_id, symbols=params)
 
     else:
         outgoing_text = f"'{command}' is not a valid command"
-
-    return outgoing_text
-
-
-def _show_watchlist(chat_id: int):
-    outgoing_text = f"showed watchlist to {chat_id}"
-
-    return outgoing_text
-
-
-def _watch_stocks(chat_id: int, symbols: list[str]):
-    symbols_text = ", ".join(symbols)
-    outgoing_text = f"added {symbols_text} to watchlist for {chat_id}"
-
-    return outgoing_text
-
-
-def _unwatch_stocks(chat_id: int, symbols: list[str]):
-    symbols_text = ", ".join(symbols)
-    outgoing_text = f"removed {symbols_text} from watchlist for {chat_id}"
 
     return outgoing_text
