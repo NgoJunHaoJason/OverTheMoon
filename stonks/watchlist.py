@@ -10,7 +10,7 @@ def show_watchlist(deta_base: _Base, chat_id: str) -> str:
         fetch_response = deta_base.fetch({"chat_id": chat_id})
         watched_stocks: list[dict[str, str]] = fetch_response.items
 
-        symbols = [stock["symbol"] for stock in watched_stocks]
+        symbols = sorted([stock["symbol"] for stock in watched_stocks])
         symbols_text = "\n".join(symbols)
 
         outgoing_text = f"Your watchlist:\n{symbols_text}"
