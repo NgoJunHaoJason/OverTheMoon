@@ -1,6 +1,8 @@
 import logging
 
+import yfinance as yf
 from deta import _Base
+from fastapi import HTTPException
 
 
 def show_watchlist(deta_base: _Base, chat_id: str) -> str:
@@ -23,16 +25,23 @@ def show_watchlist(deta_base: _Base, chat_id: str) -> str:
 def watch_stocks(deta_base: _Base, chat_id: str, symbols: list[str]) -> str:
     symbols = [symbol.upper() for symbol in symbols]
 
-    watched_stocks = [
-        {
-            "chat_id": chat_id,
-            "symbol": symbol,
-            "key": _get_deta_base_key(chat_id, symbol),
-        }
-        for symbol in symbols
-    ]
-
     try:
+        for symbol in symbols:
+            stock = yf.Ticker(symbol)
+            history = stock.history(period="2mo")
+
+            if history.empty:
+                raise HTTPException(404, f"'{symbol}' not found")
+
+        watched_stocks = [
+            {
+                "chat_id": chat_id,
+                "symbol": symbol,
+                "key": _get_deta_base_key(chat_id, symbol),
+            }
+            for symbol in symbols
+        ]
+
         deta_base.put_many(watched_stocks)
         outgoing_text = f"Added {symbols} to watchlist"
 

@@ -3,8 +3,9 @@ from enum import Enum
 
 import pandas as pd
 import yfinance as yf
+from fastapi import HTTPException
 
-from .indicators import (
+from stonks.indicators import (
     fast_stochastic_oscillator,
     percent_b,
     price_weighted_moving_average_ratio,
@@ -14,6 +15,9 @@ from .indicators import (
 def get_signal(symbol: str) -> tuple[str, str, str, str, float, dt.date]:
     stock = yf.Ticker(symbol)
     history = stock.history(period="2mo")
+
+    if history.empty:
+        raise HTTPException(404, f"'{symbol}' not found")
 
     # already adjusted for stock splits (and dividends?)
     close = history["Close"]
