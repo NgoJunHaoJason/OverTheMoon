@@ -1,3 +1,5 @@
+from enum import Enum
+
 import pandas as pd
 
 
@@ -60,3 +62,41 @@ def _weighted_average(
     total_weight: float,
 ) -> pd.Series:
     return (stock_price * weights).sum() / total_weight
+
+
+class _IndicatorThreshold(Enum):
+    def __str__(self) -> str:
+        return str(self.value)
+
+    def __eq__(self, __value: object) -> bool:
+        if isinstance(__value, (int, float)):
+            return self.value == __value
+
+        raise ValueError(f"{__value} is not a number")
+
+    def __lt__(self, __value: object) -> bool:
+        if isinstance(__value, (int, float)):
+            return self.value < __value
+
+        raise ValueError(f"{__value} is not a number")
+
+    def __gt__(self, __value: object) -> bool:
+        if isinstance(__value, (int, float)):
+            return self.value > __value
+
+        raise ValueError(f"{__value} is not a number")
+
+
+class FastStochasticOscillatorThreshold(_IndicatorThreshold):
+    OVERBOUGHT = 0.8
+    OVERSOLD = 0.2
+
+
+class PercentBThreshold(_IndicatorThreshold):
+    OVERBOUGHT = 1.0
+    OVERSOLD = 0.0
+
+
+class PriceWeightedMovingAverageRatioThreshold(_IndicatorThreshold):
+    OVERBOUGHT = 1.05
+    OVERSOLD = 0.95

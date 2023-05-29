@@ -5,6 +5,65 @@ from deta import Deta
 from fastapi import HTTPException
 
 from stonks.commands import Command
+from stonks.signals import MainSignal, get_signals
+
+
+def check_watchlist_signals(deta: Deta, chat_id: str) -> str:
+    try:
+        watched_symbols = get_watched_symbols(deta, chat_id)
+        overbought_symbols, oversold_symbols = _group_symbols_by_signal(watched_symbols)
+        outgoing_text = _show_watchlist_signals(overbought_symbols, oversold_symbols)
+
+    except Exception as error:
+        outgoing_text = f"Failed to retrieve data for your watchlist due to {error}"
+        logging.error(outgoing_text)
+
+    return outgoing_text
+
+
+def _group_symbols_by_signal(symbols: list[str]) -> tuple[list[str], list[str]]:
+    overbought_symbols = []
+    oversold_symbols = []
+
+    for symbol in symbols:
+        signals = get_signals(symbol)
+        main_signal = signals["main_signal"]
+
+        if main_signal == MainSignal.OVERBOUGHT:
+            overbought_symbols.append(symbol)
+        elif main_signal == MainSignal.OVERSOLD:
+            oversold_symbols.append(symbol)
+
+    return overbought_symbols, oversold_symbols
+
+
+def _show_watchlist_signals(
+    overbought_symbols: list[str],
+    oversold_symbols: list[str],
+) -> str:
+    if overbought_symbols and oversold_symbols:
+        overbought_symbols_text = "\n".join(overbought_symbols)
+        oversold_symbols_text = "\n".join(oversold_symbols)
+
+        outgoing_text = (
+            f"Overbought:\n{overbought_symbols_text}\n\n"
+            f"Oversold:\n{oversold_symbols_text}\n\n"
+            "Enter <symbol> for more details."
+        )
+    elif overbought_symbols:
+        symbols_text = "\n".join(overbought_symbols)
+        outgoing_text = (
+            f"Overbought:\n{symbols_text}\n\nEnter <symbol> for more details."
+        )
+    elif oversold_symbols:
+        symbols_text = "\n".join(oversold_symbols)
+        outgoing_text = f"Oversold:\n{symbols_text}\n\nEnter <symbol> for more details."
+    else:
+        outgoing_text = (
+            "None of the tickers on your watchlist is overbought or oversold"
+        )
+
+    return outgoing_text
 
 
 def show_watchlist(deta: Deta, chat_id: str) -> str:

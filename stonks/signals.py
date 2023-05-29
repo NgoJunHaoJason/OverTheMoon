@@ -7,6 +7,9 @@ import yfinance as yf
 from fastapi import HTTPException
 
 from stonks.indicators import (
+    FastStochasticOscillatorThreshold,
+    PercentBThreshold,
+    PriceWeightedMovingAverageRatioThreshold,
     fast_stochastic_oscillator,
     percent_b,
     price_weighted_moving_average_ratio,
@@ -67,76 +70,19 @@ def get_signals(symbol: str) -> dict[str, Any]:
     }
 
 
-def _get_fso_signal(fso_value: float) -> str:
-    if fso_value > _FastStochasticOscillator.OVERBOUGHT_THRESHOLD.value:
-        signal = (
-            f"{_FastStochasticOscillator.OVERBOUGHT_THRESHOLD.value}"
-            f" < [{fso_value:.3f}]"
-        )
-    elif fso_value < _FastStochasticOscillator.OVERSOLD_THRESHOLD.value:
-        signal = (
-            f"[{fso_value:.3f}]"
-            f" < {_FastStochasticOscillator.OVERSOLD_THRESHOLD.value}"
-        )
-    else:
-        signal = (
-            f"{_FastStochasticOscillator.OVERSOLD_THRESHOLD.value}"
-            f" <= [{fso_value:.3f}]"
-            f" <= {_FastStochasticOscillator.OVERBOUGHT_THRESHOLD.value}"
-        )
-
-    return signal
-
-
-def _get_pb_signal(pb_value: float) -> str:
-    if pb_value > _PercentB.OVERBOUGHT_THRESHOLD.value:
-        signal = f"{_PercentB.OVERBOUGHT_THRESHOLD.value} < [{pb_value:.3f}]"
-    elif pb_value < _PercentB.OVERSOLD_THRESHOLD.value:
-        signal = f"[{pb_value:.3f}] < {_PercentB.OVERSOLD_THRESHOLD.value}"
-    else:
-        signal = (
-            f"{_PercentB.OVERSOLD_THRESHOLD.value}"
-            f" <= [{pb_value:.3f}]"
-            f" <= {_PercentB.OVERBOUGHT_THRESHOLD.value}"
-        )
-
-    return signal
-
-
-def _get_pwma_signal(pwma_value: float) -> str:
-    if pwma_value > _PriceWeightedMovingAverageRatio.OVERBOUGHT_THRESHOLD.value:
-        signal = (
-            f"{_PriceWeightedMovingAverageRatio.OVERBOUGHT_THRESHOLD.value}"
-            f" < [{pwma_value:.3f}]"
-        )
-    elif pwma_value < _PriceWeightedMovingAverageRatio.OVERSOLD_THRESHOLD.value:
-        signal = (
-            f"[{pwma_value:.3f}]"
-            f" < {_PriceWeightedMovingAverageRatio.OVERSOLD_THRESHOLD.value}"
-        )
-    else:
-        signal = (
-            f"{_PriceWeightedMovingAverageRatio.OVERSOLD_THRESHOLD.value}"
-            f" <= [{pwma_value:.3f}]"
-            f" <= {_PriceWeightedMovingAverageRatio.OVERBOUGHT_THRESHOLD.value}"
-        )
-
-    return signal
-
-
 def _get_main_signal(
     fso_value: float,
     pb_value: float,
     pwma_value: float,
 ) -> str:
     if _is_overbought(fso_value, pb_value, pwma_value):
-        signal = "overbought"
+        signal = MainSignal.OVERBOUGHT
     elif _is_oversold(fso_value, pb_value, pwma_value):
-        signal = "oversold"
+        signal = MainSignal.OVERSOLD
     else:
-        signal = "neither overbought nor oversold"
+        signal = MainSignal.NEITHER
 
-    return signal
+    return str(signal)
 
 
 def _is_overbought(
@@ -145,9 +91,9 @@ def _is_overbought(
     pwma_value: float,
 ) -> bool:
     return (
-        (fso_value > _FastStochasticOscillator.OVERBOUGHT_THRESHOLD.value)
-        and (pb_value > _PercentB.OVERBOUGHT_THRESHOLD.value)
-        and (pwma_value > _PriceWeightedMovingAverageRatio.OVERBOUGHT_THRESHOLD.value)
+        (fso_value > FastStochasticOscillatorThreshold.OVERBOUGHT)
+        and (pb_value > PercentBThreshold.OVERBOUGHT)
+        and (pwma_value > PriceWeightedMovingAverageRatioThreshold.OVERBOUGHT)
     )
 
 
@@ -157,22 +103,72 @@ def _is_oversold(
     pwma_value: float,
 ) -> bool:
     return (
-        (fso_value < _FastStochasticOscillator.OVERSOLD_THRESHOLD.value)
-        and (pb_value < _PercentB.OVERSOLD_THRESHOLD.value)
-        and (pwma_value < _PriceWeightedMovingAverageRatio.OVERSOLD_THRESHOLD.value)
+        (fso_value < FastStochasticOscillatorThreshold.OVERSOLD)
+        and (pb_value < PercentBThreshold.OVERSOLD)
+        and (pwma_value < PriceWeightedMovingAverageRatioThreshold.OVERSOLD)
     )
 
 
-class _FastStochasticOscillator(Enum):
-    OVERBOUGHT_THRESHOLD = 0.8
-    OVERSOLD_THRESHOLD = 0.2
+def _get_fso_signal(fso_value: float) -> str:
+    if fso_value > FastStochasticOscillatorThreshold.OVERBOUGHT:
+        signal = (
+            f"{FastStochasticOscillatorThreshold.OVERBOUGHT}" f" < [{fso_value:.3f}]"
+        )
+    elif fso_value < FastStochasticOscillatorThreshold.OVERSOLD:
+        signal = f"[{fso_value:.3f}]" f" < {FastStochasticOscillatorThreshold.OVERSOLD}"
+    else:
+        signal = (
+            f"{FastStochasticOscillatorThreshold.OVERSOLD}"
+            f" <= [{fso_value:.3f}]"
+            f" <= {FastStochasticOscillatorThreshold.OVERBOUGHT}"
+        )
+
+    return signal
 
 
-class _PercentB(Enum):
-    OVERBOUGHT_THRESHOLD = 1.0
-    OVERSOLD_THRESHOLD = 0.0
+def _get_pb_signal(pb_value: float) -> str:
+    if pb_value > PercentBThreshold.OVERBOUGHT:
+        signal = f"{PercentBThreshold.OVERBOUGHT} < [{pb_value:.3f}]"
+    elif pb_value < PercentBThreshold.OVERSOLD:
+        signal = f"[{pb_value:.3f}] < {PercentBThreshold.OVERSOLD}"
+    else:
+        signal = (
+            f"{PercentBThreshold.OVERSOLD}"
+            f" <= [{pb_value:.3f}]"
+            f" <= {PercentBThreshold.OVERBOUGHT}"
+        )
+
+    return signal
 
 
-class _PriceWeightedMovingAverageRatio(Enum):
-    OVERBOUGHT_THRESHOLD = 1.05
-    OVERSOLD_THRESHOLD = 0.95
+def _get_pwma_signal(pwma_value: float) -> str:
+    if pwma_value > PriceWeightedMovingAverageRatioThreshold.OVERBOUGHT:
+        signal = (
+            f"{PriceWeightedMovingAverageRatioThreshold.OVERBOUGHT}"
+            f" < [{pwma_value:.3f}]"
+        )
+    elif pwma_value < PriceWeightedMovingAverageRatioThreshold.OVERSOLD:
+        signal = (
+            f"[{pwma_value:.3f}]"
+            f" < {PriceWeightedMovingAverageRatioThreshold.OVERSOLD}"
+        )
+    else:
+        signal = (
+            f"{PriceWeightedMovingAverageRatioThreshold.OVERSOLD}"
+            f" <= [{pwma_value:.3f}]"
+            f" <= {PriceWeightedMovingAverageRatioThreshold.OVERBOUGHT}"
+        )
+
+    return signal
+
+
+class MainSignal(Enum):
+    OVERBOUGHT = "overbought"
+    OVERSOLD = "oversold"
+    NEITHER = "neither overbought nor oversold"
+
+    def __eq__(self, __value: object) -> bool:
+        return self.value == str(__value)
+
+    def __str__(self) -> str:
+        return self.value
