@@ -35,7 +35,7 @@ uvicorn main:app --reload
 2. Set webhook by calling: `https://api.telegram.org/bot{TELEGRAM_API_TOKEN}/setWebhook?url={APP_BASE_URL}`
 3. Confirm that webhook was set successfully by calling: `https://api.telegram.org/bot{TELEGRAM_API_TOKEN}/getWebhookInfo`
 
-## Render.com integration
+## Render integration
 
 under Environment:
 
@@ -52,6 +52,6 @@ under Collections settings:
 
 - create new data keys
 
-## TODO
+## cron-job integration
 
-watchlist notification (cron-job.org integration)
+TODO

@@ -2,6 +2,7 @@ import logging
 
 from deta import _Base
 
+from stonks.commands import Command
 from stonks.signals import get_signals, show_signals
 from stonks.watchlist import show_watchlist, unwatch_stocks, watch_stocks
 
@@ -12,8 +13,8 @@ def check_stock_signal(symbol: str) -> str:
         outgoing_text = show_signals(symbol, **signals)
 
     except Exception as error:
-        outgoing_text = f"Failed to retrieve data for '{symbol}'"
-        logging.error(f"{outgoing_text} due to {error}")
+        outgoing_text = f"Failed to retrieve data for '{symbol}' due to {error}"
+        logging.error(outgoing_text)
 
     return outgoing_text
 
@@ -24,13 +25,13 @@ def follow_command(
     command: str,
     params: list[str],
 ) -> str:
-    if command == "/list":
+    if command == Command.LIST:
         outgoing_text = show_watchlist(deta_base, chat_id)
 
-    elif command == "/watch":
+    elif command == Command.WATCH:
         outgoing_text = watch_stocks(deta_base, chat_id, symbols=params)
 
-    elif command == "/unwatch":
+    elif command == Command.UNWATCH:
         outgoing_text = unwatch_stocks(deta_base, chat_id, symbols=params)
 
     else:
