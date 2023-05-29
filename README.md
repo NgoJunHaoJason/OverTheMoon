@@ -22,6 +22,13 @@ pip install -r requirements.txt
 pre-commit install
 ```
 
+Create a `.env` file in the project root directory with the following keys:
+
+```
+DETA_PROJECT_KEY=<your_key>
+TELEGRAM_API_TOKEN=<your_token>
+```
+
 ## Run
 
 ```bash
