@@ -1,6 +1,6 @@
 import logging
 
-from deta import _Base
+from deta import Deta
 
 from stonks.commands import Command
 from stonks.signals import get_signals, show_signals
@@ -20,19 +20,19 @@ def check_stock_signal(symbol: str) -> str:
 
 
 def follow_command(
-    deta_base: _Base,
+    deta: Deta,
     chat_id: str,
     command: str,
     params: list[str],
 ) -> str:
     if command == Command.LIST:
-        outgoing_text = show_watchlist(deta_base, chat_id)
+        outgoing_text = show_watchlist(deta, chat_id)
 
     elif command == Command.WATCH:
-        outgoing_text = watch_stocks(deta_base, chat_id, symbols=params)
+        outgoing_text = watch_stocks(deta, chat_id, symbols=params)
 
     elif command == Command.UNWATCH:
-        outgoing_text = unwatch_stocks(deta_base, chat_id, symbols=params)
+        outgoing_text = unwatch_stocks(deta, chat_id, symbols=params)
 
     else:
         outgoing_text = f"'{command}' is not a valid command"

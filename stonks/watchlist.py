@@ -1,18 +1,18 @@
 import logging
 
 import yfinance as yf
-from deta import _Base
+from deta import Deta
 from fastapi import HTTPException
 
 from stonks.commands import Command
 
 
-def show_watchlist(deta_base: _Base, chat_id: str) -> str:
+def show_watchlist(deta: Deta, chat_id: str) -> str:
     try:
-        symbols = get_watched_symbols(deta_base, chat_id)
+        watched_symbols = get_watched_symbols(deta, chat_id)
 
-        if symbols:
-            symbols_text = "\n".join(symbols)
+        if watched_symbols:
+            symbols_text = "\n".join(watched_symbols)
             outgoing_text = f"Your watchlist:\n{symbols_text}"
         else:
             outgoing_text = (
@@ -27,20 +27,21 @@ def show_watchlist(deta_base: _Base, chat_id: str) -> str:
     return outgoing_text
 
 
-def get_watched_symbols(deta_base: _Base, chat_id: str) -> list[str]:
-    fetch_response = deta_base.fetch({"chat_id": chat_id})
-    watched_stocks = fetch_response.items
-    return sorted([stock["symbol"] for stock in watched_stocks])
+def get_watched_symbols(deta: Deta, chat_id: str) -> list[str]:
+    watchlist_base = deta.Base("watchlist")
+    fetch_response = watchlist_base.fetch({"chat_id": chat_id})
+    watched_tickers = fetch_response.items
+    return sorted([stock["symbol"] for stock in watched_tickers])
 
 
-def watch_stocks(deta_base: _Base, chat_id: str, symbols: list[str]) -> str:
+def watch_stocks(deta: Deta, chat_id: str, symbols: list[str]) -> str:
     symbols = [symbol.upper() for symbol in symbols]
 
     if symbols:
         try:
             for symbol in symbols:
-                stock = yf.Ticker(symbol)
-                history = stock.history(period="2mo")
+                ticker = yf.Ticker(symbol)
+                history = ticker.history(period="2mo")
 
                 if history.empty:
                     raise HTTPException(404, f"'{symbol}' not found")
@@ -54,7 +55,8 @@ def watch_stocks(deta_base: _Base, chat_id: str, symbols: list[str]) -> str:
                 for symbol in symbols
             ]
 
-            deta_base.put_many(watched_stocks)
+            watchlist_base = deta.Base("watchlist")
+            watchlist_base.put_many(watched_stocks)
             outgoing_text = f"Added {symbols} to watchlist"
 
         except Exception as error:
@@ -70,13 +72,14 @@ def watch_stocks(deta_base: _Base, chat_id: str, symbols: list[str]) -> str:
     return outgoing_text
 
 
-def unwatch_stocks(deta_base: _Base, chat_id: str, symbols: list[str]) -> str:
+def unwatch_stocks(deta: Deta, chat_id: str, symbols: list[str]) -> str:
     symbols = [symbol.upper() for symbol in symbols]
 
     if symbols:
         try:
+            watchlist_base = deta.Base("watchlist")
             for symbol in symbols:
-                deta_base.delete(_get_deta_base_key(chat_id, symbol))
+                watchlist_base.delete(_get_deta_base_key(chat_id, symbol))
 
             outgoing_text = f"Removed {symbols} from watchlist"
 

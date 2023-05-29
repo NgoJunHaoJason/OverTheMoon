@@ -23,9 +23,7 @@ logging.basicConfig(
 
 app = FastAPI()
 client = httpx.AsyncClient()
-
 deta = Deta(DETA_PROJECT_KEY)
-deta_base = deta.Base("stonks")
 
 
 @app.get("/hello")
@@ -44,7 +42,7 @@ async def webhook(request: Request):
 
     if incoming_text.startswith("/"):
         command, *params = incoming_text.split()
-        outgoing_text = follow_command(deta_base, str(chat_id), command, params)
+        outgoing_text = follow_command(deta, str(chat_id), command, params)
     else:
         outgoing_text = check_stock_signal(symbol=incoming_text)
 
