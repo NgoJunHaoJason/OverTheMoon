@@ -57,10 +57,10 @@ def watch_stocks(deta: Deta, chat_id: str, symbols: list[str]) -> str:
 
             watchlist_base = deta.Base("watchlist")
             watchlist_base.put_many(watched_stocks)
-            outgoing_text = f"Added {symbols} to watchlist"
+            outgoing_text = f"Added {symbols} to your watchlist"
 
         except Exception as error:
-            outgoing_text = f"Failed to add {symbols} to watchlist due to {error}"
+            outgoing_text = f"Failed to add {symbols} to your watchlist due to {error}"
             logging.error(outgoing_text)
     else:
         outgoing_text = (
@@ -81,10 +81,12 @@ def unwatch_stocks(deta: Deta, chat_id: str, symbols: list[str]) -> str:
             for symbol in symbols:
                 watchlist_base.delete(_get_deta_base_key(chat_id, symbol))
 
-            outgoing_text = f"Removed {symbols} from watchlist"
+            outgoing_text = f"Removed {symbols} from your watchlist"
 
         except Exception as error:
-            outgoing_text = f"Failed to remove {symbols} from watchlist due to {error}"
+            outgoing_text = (
+                f"Failed to remove {symbols} from your watchlist due to {error}"
+            )
             logging.error(outgoing_text)
     else:
         outgoing_text = (
