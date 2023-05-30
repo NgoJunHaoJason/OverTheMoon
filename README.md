@@ -62,3 +62,9 @@ under Collections settings:
 ## cron-job integration
 
 TODO
+
+## TODO
+
+1. notification
+2. /backtest
+3. codecov
