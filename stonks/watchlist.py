@@ -10,9 +10,16 @@ from stonks.signals import MainSignal, get_signals
 
 def check_watchlist_signals(deta: Deta, chat_id: str) -> str:
     try:
-        watched_symbols = get_watched_symbols(deta, chat_id)
-        overbought_symbols, oversold_symbols = _group_symbols_by_signal(watched_symbols)
-        outgoing_text = _show_watchlist_signals(overbought_symbols, oversold_symbols)
+        symbols = get_watched_symbols(deta, chat_id)
+
+        if symbols:
+            grouped_symbols = _group_symbols_by_signal(symbols)
+            outgoing_text = _show_watchlist_signals(*grouped_symbols)
+        else:
+            outgoing_text = (
+                "Your watchlist is empty.\n"
+                f"Start watching tickers with the {Command.LIST} command."
+            )
 
     except Exception as error:
         outgoing_text = f"Failed to retrieve data for your watchlist due to {error}"
@@ -60,7 +67,7 @@ def _show_watchlist_signals(
         outgoing_text = f"Oversold:\n{symbols_text}\n\nEnter <symbol> for more details."
     else:
         outgoing_text = (
-            "None of the tickers on your watchlist is overbought or oversold"
+            "None of the tickers on your watchlist is overbought or oversold."
         )
 
     return outgoing_text
@@ -68,10 +75,10 @@ def _show_watchlist_signals(
 
 def show_watchlist(deta: Deta, chat_id: str) -> str:
     try:
-        watched_symbols = get_watched_symbols(deta, chat_id)
+        symbols = get_watched_symbols(deta, chat_id)
 
-        if watched_symbols:
-            symbols_text = "\n".join(watched_symbols)
+        if symbols:
+            symbols_text = "\n".join(symbols)
             outgoing_text = f"Your watchlist:\n{symbols_text}"
         else:
             outgoing_text = (
@@ -116,7 +123,7 @@ def watch_stocks(deta: Deta, chat_id: str, symbols: list[str]) -> str:
 
             watchlist_base = deta.Base("watchlist")
             watchlist_base.put_many(watched_stocks)
-            outgoing_text = f"Added {symbols} to your watchlist"
+            outgoing_text = f"Added {symbols} to your watchlist."
 
         except Exception as error:
             outgoing_text = f"Failed to add {symbols} to your watchlist due to {error}"
@@ -140,7 +147,7 @@ def unwatch_stocks(deta: Deta, chat_id: str, symbols: list[str]) -> str:
             for symbol in symbols:
                 watchlist_base.delete(_get_deta_base_key(chat_id, symbol))
 
-            outgoing_text = f"Removed {symbols} from your watchlist"
+            outgoing_text = f"Removed {symbols} from your watchlist."
 
         except Exception as error:
             outgoing_text = (
